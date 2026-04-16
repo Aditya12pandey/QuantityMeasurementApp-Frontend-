@@ -1,0 +1,514 @@
+<!-- ── SITE HEADER ─────────────────────────────────────────── -->
+<header class="site-header" role="banner">
+  <nav aria-label="Main navigation">
+    <a href="#" class="logo" aria-label="Quantity Measurement Home">
+      <div class="logo-mark" aria-hidden="true">⚖</div>
+      <div class="logo-text">Quantity <span>Measurement</span></div>
+    </a>
+
+    <!-- Nav actions -->
+    <div class="nav-actions" id="navActions">
+      <!-- Logged OUT -->
+      <ng-container *ngIf="!isLoggedIn">
+        <button class="btn" (click)="openLogin()">Login</button>
+        <button class="btn btn--primary" (click)="openRegister()">Register</button>
+      </ng-container>
+
+      <!-- Logged IN -->
+      <ng-container *ngIf="isLoggedIn">
+        <button class="user-chip" (click)="toggleDropdown()">
+          <div class="avatar">{{ (username || 'U')[0].toUpperCase() }}</div>
+          <span class="user-display">{{ username }}</span>
+          <span style="font-size:0.7rem; color:var(--clr-muted2); margin-left:2px">▾</span>
+        </button>
+
+        <!-- Dropdown -->
+        <div class="dropdown" [class.open]="dropdownOpen">
+          <button class="dd-item" (click)="switchTab('history'); dropdownOpen=false">
+            ⏱ My History
+          </button>
+          <div class="dd-sep"></div>
+          <button class="dd-item danger" (click)="logout()">→ Logout</button>
+        </div>
+      </ng-container>
+    </div>
+  </nav>
+</header>
+
+<!-- ── MAIN ──────────────────────────────────────────────────── -->
+<main role="main">
+
+  <!-- HERO -->
+  <section class="hero-section" aria-labelledby="heroTitle">
+    <div class="hero-badge">⚡ Instant Unit Conversion</div>
+    <h1 class="hero-title" id="heroTitle">Quantity <em>Measurement</em></h1>
+    <p class="hero-desc">
+      Convert, compare, and calculate across Length, Weight, Volume, and
+      Temperature — all in one place.
+    </p>
+    <aside class="hero-stats" aria-label="App statistics">
+      <div class="stat-item">
+        <span class="stat-number">4</span>
+        <span class="stat-label">Types</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">11</span>
+        <span class="stat-label">Units</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">5</span>
+        <span class="stat-label">Operations</span>
+      </div>
+    </aside>
+  </section>
+
+  <!-- TABS -->
+  <section class="tabs-section" aria-label="Operation selector">
+    <div class="tabs" role="tablist">
+      <button
+        *ngFor="let t of tabs"
+        class="tab"
+        [class.active]="activeTab === t.id"
+        role="tab"
+        [attr.aria-selected]="activeTab === t.id"
+        (click)="switchTab(t.id)"
+      >{{ t.label }}</button>
+    </div>
+  </section>
+
+  <!-- PANELS -->
+  <section class="panel-section">
+
+    <!-- ── CONVERT ── -->
+    <article *ngIf="activeTab==='convert'" id="panel-convert" role="tabpanel" class="card">
+      <h3 class="card-title section-title">Unit Converter</h3>
+      <p class="card-sub">Select a measurement type, enter a value, and choose units to convert.</p>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="cvType">Measurement Type</label>
+          <select id="cvType" class="form-select" [(ngModel)]="cvType" (ngModelChange)="onCvTypeChange()">
+            <option value="LENGTH">📏 Length</option>
+            <option value="WEIGHT">⚖ Weight</option>
+            <option value="VOLUME">🧪 Volume</option>
+            <option value="TEMPERATURE">🌡 Temperature</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label required-label" for="cvVal">Value</label>
+          <input type="number" id="cvVal" class="form-input" placeholder="e.g. 100" step="any"
+                 [(ngModel)]="cvVal" aria-describedby="cvHint" />
+          <span class="field-hint" id="cvHint">Enter the value to convert</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label" for="cvFrom">From Unit</label>
+          <select id="cvFrom" class="form-select" [(ngModel)]="cvFrom">
+            <option *ngFor="let u of getUnits(cvType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="cvTo">To Unit</label>
+          <select id="cvTo" class="form-select" [(ngModel)]="cvTo">
+            <option *ngFor="let u of getUnits(cvType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="swap-row">
+        <button class="swap-btn" (click)="swapCvUnits()" aria-label="Swap units">⇄ Swap Units</button>
+      </div>
+
+      <div class="grid-action">
+        <button class="btn--clear" (click)="clearCv()">Clear</button>
+        <button class="btn--action" (click)="doConvert()">Convert →</button>
+      </div>
+
+      <div class="result-box" [class.show]="cvResultVisible" role="status" aria-live="polite">
+        <div>
+          <div class="result-number" [attr.data-unit]="cvUnit">{{ cvNum }}</div>
+          <div class="result-caption">{{ cvCap }}</div>
+        </div>
+        <div class="result-badge">{{ cvBadge }}</div>
+      </div>
+    </article>
+
+    <!-- ── COMPARE ── -->
+    <article *ngIf="activeTab==='compare'" id="panel-compare" role="tabpanel" class="card">
+      <h3 class="card-title section-title">Compare Quantities</h3>
+      <p class="card-sub">Check whether two quantities are equal in the same measurement type.</p>
+
+      <div class="form-field mb-md">
+        <label class="form-label required-label" for="cmpType">Measurement Type</label>
+        <select id="cmpType" class="form-select" [(ngModel)]="cmpType" (ngModelChange)="onCmpTypeChange()">
+          <option value="LENGTH">📏 Length</option>
+          <option value="WEIGHT">⚖ Weight</option>
+          <option value="VOLUME">🧪 Volume</option>
+          <option value="TEMPERATURE">🌡 Temperature</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="cmp1v">First Value</label>
+          <input type="number" id="cmp1v" class="form-input" placeholder="e.g. 12" step="any" [(ngModel)]="cmp1v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="cmp1u">First Unit</label>
+          <select id="cmp1u" class="form-select" [(ngModel)]="cmp1u">
+            <option *ngFor="let u of getUnits(cmpType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="op-divider">vs</div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="cmp2v">Second Value</label>
+          <input type="number" id="cmp2v" class="form-input" placeholder="e.g. 1" step="any" [(ngModel)]="cmp2v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="cmp2u">Second Unit</label>
+          <select id="cmp2u" class="form-select" [(ngModel)]="cmp2u">
+            <option *ngFor="let u of getUnits(cmpType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-action">
+        <button class="btn--clear" (click)="clearCmp()">Clear</button>
+        <button class="btn--action" (click)="doCompare()">Compare →</button>
+      </div>
+
+      <div class="result-box" [class.show]="cmpResultVisible" [ngClass]="cmpClass" role="status" aria-live="polite">
+        <div>
+          <div class="result-number">{{ cmpNum }}</div>
+          <div class="result-caption">{{ cmpCap }}</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── ADD ── -->
+    <article *ngIf="activeTab==='add'" id="panel-add" role="tabpanel" class="card">
+      <h3 class="card-title section-title">Add Quantities</h3>
+      <p class="card-sub">Add two quantities together and get the result in your chosen unit.</p>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="addType">Measurement Type</label>
+          <select id="addType" class="form-select" [(ngModel)]="addType" (ngModelChange)="onAddTypeChange()">
+            <option value="LENGTH">📏 Length</option>
+            <option value="WEIGHT">⚖ Weight</option>
+            <option value="VOLUME">🧪 Volume</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label required-label" for="addTgt">Result Unit</label>
+          <select id="addTgt" class="form-select" [(ngModel)]="addTgt">
+            <option *ngFor="let u of getUnits(addType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="add1v">First Value</label>
+          <input type="number" id="add1v" class="form-input" placeholder="e.g. 5" step="any" [(ngModel)]="add1v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="add1u">First Unit</label>
+          <select id="add1u" class="form-select" [(ngModel)]="add1u">
+            <option *ngFor="let u of getUnits(addType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="op-divider">+</div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="add2v">Second Value</label>
+          <input type="number" id="add2v" class="form-input" placeholder="e.g. 3" step="any" [(ngModel)]="add2v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="add2u">Second Unit</label>
+          <select id="add2u" class="form-select" [(ngModel)]="add2u">
+            <option *ngFor="let u of getUnits(addType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-action">
+        <button class="btn--clear" (click)="clearAdd()">Clear</button>
+        <button class="btn--action" (click)="doAdd()">Add →</button>
+      </div>
+
+      <div class="result-box" [class.show]="addResultVisible" role="status" aria-live="polite">
+        <div>
+          <div class="result-number" [attr.data-unit]="addUnit">{{ addNum }}</div>
+          <div class="result-caption">{{ addCap }}</div>
+        </div>
+        <div class="result-badge">{{ addBadge }}</div>
+      </div>
+    </article>
+
+    <!-- ── SUBTRACT ── -->
+    <article *ngIf="activeTab==='subtract'" id="panel-subtract" role="tabpanel" class="card">
+      <h3 class="card-title section-title">Subtract Quantities</h3>
+      <p class="card-sub">Subtract one quantity from another.</p>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="subType">Measurement Type</label>
+          <select id="subType" class="form-select" [(ngModel)]="subType" (ngModelChange)="onSubTypeChange()">
+            <option value="LENGTH">📏 Length</option>
+            <option value="WEIGHT">⚖ Weight</option>
+            <option value="VOLUME">🧪 Volume</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label required-label" for="subTgt">Result Unit</label>
+          <select id="subTgt" class="form-select" [(ngModel)]="subTgt">
+            <option *ngFor="let u of getUnits(subType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="sub1v">First Value</label>
+          <input type="number" id="sub1v" class="form-input" placeholder="e.g. 10" step="any" [(ngModel)]="sub1v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="sub1u">First Unit</label>
+          <select id="sub1u" class="form-select" [(ngModel)]="sub1u">
+            <option *ngFor="let u of getUnits(subType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="op-divider">−</div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="sub2v">Second Value</label>
+          <input type="number" id="sub2v" class="form-input" placeholder="e.g. 3" step="any" [(ngModel)]="sub2v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="sub2u">Second Unit</label>
+          <select id="sub2u" class="form-select" [(ngModel)]="sub2u">
+            <option *ngFor="let u of getUnits(subType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-action">
+        <button class="btn--clear" (click)="clearSub()">Clear</button>
+        <button class="btn--action" (click)="doSubtract()">Subtract →</button>
+      </div>
+
+      <div class="result-box" [class.show]="subResultVisible" role="status" aria-live="polite">
+        <div>
+          <div class="result-number" [attr.data-unit]="subUnit">{{ subNum }}</div>
+          <div class="result-caption">{{ subCap }}</div>
+        </div>
+        <div class="result-badge">{{ subBadge }}</div>
+      </div>
+    </article>
+
+    <!-- ── DIVIDE ── -->
+    <article *ngIf="activeTab==='divide'" id="panel-divide" role="tabpanel" class="card">
+      <h3 class="card-title section-title">Divide Quantities</h3>
+      <p class="card-sub">Find the ratio between two quantities.</p>
+
+      <div class="form-field mb-md">
+        <label class="form-label required-label" for="divType">Measurement Type</label>
+        <select id="divType" class="form-select" [(ngModel)]="divType" (ngModelChange)="onDivTypeChange()">
+          <option value="LENGTH">📏 Length</option>
+          <option value="WEIGHT">⚖ Weight</option>
+          <option value="VOLUME">🧪 Volume</option>
+          <option value="TEMPERATURE">🌡 Temperature</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="div1v">First Value</label>
+          <input type="number" id="div1v" class="form-input" placeholder="e.g. 100" step="any" [(ngModel)]="div1v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="div1u">First Unit</label>
+          <select id="div1u" class="form-select" [(ngModel)]="div1u">
+            <option *ngFor="let u of getUnits(divType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="op-divider">÷</div>
+
+      <div class="grid-2">
+        <div class="form-field">
+          <label class="form-label required-label" for="div2v">Second Value</label>
+          <input type="number" id="div2v" class="form-input" placeholder="e.g. 4" step="any" [(ngModel)]="div2v" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="div2u">Second Unit</label>
+          <select id="div2u" class="form-select" [(ngModel)]="div2u">
+            <option *ngFor="let u of getUnits(divType)" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-action">
+        <button class="btn--clear" (click)="clearDiv()">Clear</button>
+        <button class="btn--action" (click)="doDivide()">Divide →</button>
+      </div>
+
+      <div class="result-box" [class.show]="divResultVisible" role="status" aria-live="polite">
+        <div>
+          <div class="result-number">{{ divNum }}</div>
+          <div class="result-caption">{{ divCap }}</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── HISTORY ── -->
+    <article *ngIf="activeTab==='history'" id="panel-history" role="tabpanel" class="card">
+      <div class="history-header">
+        <div>
+          <h3 class="card-title section-title">My History</h3>
+          <p class="card-sub" style="margin-bottom:0">Your recent operations (latest first)</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div class="history-filters">
+            <button class="filter-pill" [class.active]="histFilter==='ALL'"      (click)="setHistFilter('ALL')">All</button>
+            <button class="filter-pill" [class.active]="histFilter==='CONVERT'"  (click)="setHistFilter('CONVERT')">Convert</button>
+            <button class="filter-pill" [class.active]="histFilter==='COMPARE'"  (click)="setHistFilter('COMPARE')">Compare</button>
+            <button class="filter-pill" [class.active]="histFilter==='ADD'"      (click)="setHistFilter('ADD')">Add</button>
+            <button class="filter-pill" [class.active]="histFilter==='SUBTRACT'" (click)="setHistFilter('SUBTRACT')">Subtract</button>
+            <button class="filter-pill" [class.active]="histFilter==='DIVIDE'"   (click)="setHistFilter('DIVIDE')">Divide</button>
+          </div>
+          <button class="btn btn--sm" (click)="loadHistory()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Not logged in -->
+      <div *ngIf="!isLoggedIn" class="empty-state">
+        <div class="empty-icon">🔒</div>
+        <p>Please <button class="link-btn" (click)="openLogin()">log in</button> to view your history.</p>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoggedIn && histLoading" class="empty-state">
+        <div class="spinner spinner--blue" style="width:32px;height:32px;border-width:3px; margin:0 auto;"></div>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="isLoggedIn && !histLoading && histRecords.length===0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No records found.</p>
+      </div>
+
+      <!-- Records grid (latest first) -->
+      <div *ngIf="isLoggedIn && !histLoading && histRecords.length>0" class="history-grid">
+        <div class="history-card" *ngFor="let r of histRecords">
+          <div class="history-card-inner">
+            <div class="history-left">
+              <span class="op-pill">{{ r.operationType }}</span>
+              <div class="h-detail">{{ r.measurementType }} · {{ r.inputValues }}</div>
+              <div class="h-time">🕒 {{ formatTime(r.createdAt) }}</div>
+            </div>
+            <div class="history-right">
+              <div class="h-result">{{ r.resultValue }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+</main>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────── -->
+<footer class="site-footer" role="contentinfo">
+  <p>Quantity Measurement &copy; {{ currentYear }} &mdash; Angular 17 &middot; SCSS &middot; REST API</p>
+</footer>
+
+<!-- ── LOGIN MODAL ────────────────────────────────────────────── -->
+<div class="overlay" [class.open]="loginModalOpen" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="loginTitle">Welcome back</h2>
+    <p class="modal-sub">Enter your credentials to continue.</p>
+
+    <div class="form-field mb-sm">
+      <label class="form-label required-label" for="loginUser">Username</label>
+      <input type="text" id="loginUser" class="form-input" placeholder="Your username"
+             [(ngModel)]="loginUser" autocomplete="username" />
+    </div>
+    <div class="form-field">
+      <label class="form-label required-label" for="loginPass">Password</label>
+      <input type="password" id="loginPass" class="form-input" placeholder="Your password"
+             [(ngModel)]="loginPass" autocomplete="current-password"
+             (keyup.enter)="doLogin()" />
+    </div>
+
+    <div class="err-msg" [class.visible]="!!loginErr" role="alert">{{ loginErr }}</div>
+
+    <div class="modal-btns">
+      <button class="btn--clear" (click)="closeLogin()">Cancel</button>
+      <button class="btn--action" (click)="doLogin()" [disabled]="loginLoading">
+        <span *ngIf="loginLoading" class="spinner"></span>
+        {{ loginLoading ? 'Logging in…' : 'Login →' }}
+      </button>
+    </div>
+
+    <div class="switch-link">
+      No account?
+      <button (click)="switchToReg()">Register here</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REGISTER MODAL ─────────────────────────────────────────── -->
+<div class="overlay" [class.open]="registerModalOpen" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="regTitle">Create account</h2>
+    <p class="modal-sub">Register to save and track your measurement history.</p>
+
+    <div class="form-field mb-sm">
+      <label class="form-label required-label" for="regUser">Username</label>
+      <input type="text" id="regUser" class="form-input" placeholder="Choose a username"
+             [(ngModel)]="regUser" autocomplete="username" />
+    </div>
+    <div class="form-field">
+      <label class="form-label required-label" for="regPass">Password</label>
+      <input type="password" id="regPass" class="form-input" placeholder="Min 6 characters"
+             [(ngModel)]="regPass" autocomplete="new-password"
+             (keyup.enter)="doRegister()" />
+      <span class="field-hint">At least 6 characters required</span>
+    </div>
+
+    <div class="err-msg" [class.visible]="!!regErr" role="alert">{{ regErr }}</div>
+
+    <div class="modal-btns">
+      <button class="btn--clear" (click)="closeRegister()">Cancel</button>
+      <button class="btn--action" (click)="doRegister()" [disabled]="regLoading">
+        <span *ngIf="regLoading" class="spinner"></span>
+        {{ regLoading ? 'Registering…' : 'Register →' }}
+      </button>
+    </div>
+
+    <div class="switch-link">
+      Have an account?
+      <button (click)="switchToLog()">Login here</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────────── -->
+<div class="toast" [class.show]="toastVisible" [ngClass]="toastClass" role="status" aria-live="assertive">
+  {{ toastMsg }}
+</div>

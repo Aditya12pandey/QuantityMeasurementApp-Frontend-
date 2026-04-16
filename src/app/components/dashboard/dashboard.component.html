@@ -1,0 +1,104 @@
+a<app-navbar></app-navbar>
+
+<div class="dashboard-page">
+  <div class="dashboard-container">
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <h2>Quantity Calculator</h2>
+      <p>Perform conversions and operations on physical quantities</p>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button
+        *ngFor="let tab of tabs"
+        class="tab-btn"
+        [class.active]="activeTab === tab.id"
+        (click)="setTab(tab.id)"
+      >
+        <span class="tab-icon">{{ tab.icon }}</span>
+        <span class="tab-label">{{ tab.label }}</span>
+      </button>
+    </div>
+
+    <!-- Operation Panel -->
+    <div class="operation-panel">
+
+      <!-- ── COMPARE ── -->
+      <ng-container *ngIf="activeTab === 'compare'">
+        <p class="op-description">Check whether two quantities are equal after normalising units.</p>
+        <div class="inputs-grid">
+          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+        </div>
+      </ng-container>
+
+      <!-- ── CONVERT ── -->
+      <ng-container *ngIf="activeTab === 'convert'">
+        <p class="op-description">Convert a quantity from one unit to another.</p>
+        <div class="inputs-grid single">
+          <app-quantity-input label="Source Quantity" (quantityChange)="onConvertFirstChange($event)"></app-quantity-input>
+        </div>
+        <div class="target-unit-row form-group">
+          <label>Target Type</label>
+          <select [(ngModel)]="convertTargetType" class="form-input" style="max-width:180px">
+            <option *ngFor="let t of measurementTypes" [value]="t">{{ t }}</option>
+          </select>
+          <label style="margin-left:1rem">Target Unit</label>
+          <select [(ngModel)]="convertTargetUnit" class="form-input" style="max-width:180px">
+            <option *ngFor="let u of convertUnits" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+      </ng-container>
+
+      <!-- ── ADD ── -->
+      <ng-container *ngIf="activeTab === 'add'">
+        <p class="op-description">Add two quantities and express the result in a target unit.</p>
+        <div class="inputs-grid triple">
+          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="Target Unit"     (quantityChange)="onTargetChange($event)"></app-quantity-input>
+        </div>
+      </ng-container>
+
+      <!-- ── SUBTRACT ── -->
+      <ng-container *ngIf="activeTab === 'subtract'">
+        <p class="op-description">Subtract the second quantity from the first and express the result in a target unit.</p>
+        <div class="inputs-grid triple">
+          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="Target Unit"     (quantityChange)="onTargetChange($event)"></app-quantity-input>
+        </div>
+      </ng-container>
+
+      <!-- ── DIVIDE ── -->
+      <ng-container *ngIf="activeTab === 'divide'">
+        <p class="op-description">Divide the first quantity by the second (scalar result).</p>
+        <div class="inputs-grid">
+          <app-quantity-input label="Dividend" (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Divisor"  (quantityChange)="onSecondChange($event)"></app-quantity-input>
+        </div>
+      </ng-container>
+
+      <!-- Error -->
+      <div *ngIf="errorMsg" class="alert alert-error" style="margin-top:1.25rem">{{ errorMsg }}</div>
+
+      <!-- Result -->
+      <app-result-card
+        *ngIf="result !== null"
+        [label]="resultLabel"
+        [value]="result"
+        [icon]="resultIcon"
+        [type]="resultType"
+      ></app-result-card>
+
+      <!-- Submit Button -->
+      <button class="btn btn-primary btn-calculate" (click)="execute()" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Calculating...' : '⚡ Calculate' }}
+      </button>
+    </div>
+
+  </div>
+</div>

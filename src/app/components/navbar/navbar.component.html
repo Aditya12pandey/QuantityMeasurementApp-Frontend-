@@ -1,0 +1,24 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <a routerLink="/dashboard" class="navbar-brand">
+      <span class="brand-icon">⚖️</span>
+      <span class="brand-name">Qty Measurement</span>
+    </a>
+
+    <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="navbar-menu" [class.open]="menuOpen">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link" (click)="menuOpen=false">
+        🔢 Calculator
+      </a>
+      <a routerLink="/history" routerLinkActive="active" class="nav-link" (click)="menuOpen=false">
+        📋 History
+      </a>
+      <div class="nav-divider"></div>
+      <span class="nav-user" *ngIf="username">👤 {{ username }}</span>
+      <button class="btn btn-outline btn-sm" (click)="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
