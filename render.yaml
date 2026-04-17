@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: quantity-measurement-ui
+    runtime: static
+    buildCommand: npm install && npm run build
+    publishPath: dist/quantity-measurement-ui/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
