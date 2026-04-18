@@ -34,9 +34,18 @@ export class RegisterComponent {
     this.errorMsg = '';
     this.authService.register({ username: this.username, password: this.password }).subscribe({
       next: (res: any) => {
-        this.successMsg = res.message || 'Registered successfully!';
-        this.loading = false;
-        setTimeout(() => this.router.navigate(['/login']), 1500);
+        this.successMsg = 'Account created! Logging you in...';
+        // Auto-login after registration
+        this.authService.login({ username: this.username, password: this.password }).subscribe({
+          next: () => {
+            this.loading = false;
+            this.router.navigate(['/']); // Go to dashboard
+          },
+          error: () => {
+            this.loading = false;
+            this.router.navigate(['/login']); // Fallback if auto-login fails
+          }
+        });
       },
       error: (err) => {
         this.errorMsg = err.error?.error || 'Registration failed.';
