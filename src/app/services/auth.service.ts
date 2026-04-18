@@ -30,10 +30,11 @@ export class AuthService {
   }
 
   logout(): void {
-    sessionStorage.clear(); // Clear EVERYTHING
+    sessionStorage.clear();
     this.loggedIn$.next(false);
-    this.router.navigate(['/login']).then(() => {
-      window.location.reload(); // Hard reset for the next user
+    // Navigate to root first, then reload to avoid 404 on /login
+    this.router.navigate(['/']).then(() => {
+      window.location.reload();
     });
   }
 
