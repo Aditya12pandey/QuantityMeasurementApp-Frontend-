@@ -30,10 +30,11 @@ export class AuthService {
   }
 
   logout(): void {
-    sessionStorage.removeItem(this.TOKEN_KEY);
-    sessionStorage.removeItem(this.USER_KEY);
+    sessionStorage.clear(); // Clear EVERYTHING
     this.loggedIn$.next(false);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login']).then(() => {
+      window.location.reload(); // Hard reset for the next user
+    });
   }
 
   getToken(): string | null {

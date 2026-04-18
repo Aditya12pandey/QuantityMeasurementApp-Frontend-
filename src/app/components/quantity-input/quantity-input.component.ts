@@ -14,6 +14,7 @@ export class QuantityInputComponent implements OnChanges {
   @Input() label = 'Quantity';
   @Input() forcedType: MeasurementType | null = null;   // lock type from parent
   @Input() availableUnits: string[] | null = null;      // override units list
+  @Input() initialData: QuantityDTO | null = null;
   @Output() quantityChange = new EventEmitter<QuantityDTO>();
 
   measurementTypes: MeasurementType[] = ['LENGTH', 'WEIGHT', 'TEMPERATURE', 'VOLUME'];
@@ -24,6 +25,11 @@ export class QuantityInputComponent implements OnChanges {
   selectedUnit = '';
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialData'] && this.initialData) {
+      this.value = this.initialData.value;
+      this.selectedType = this.initialData.measurementType as MeasurementType;
+      this.selectedUnit = this.initialData.unitName;
+    }
     if (changes['forcedType'] && this.forcedType) {
       this.selectedType = this.forcedType;
     }

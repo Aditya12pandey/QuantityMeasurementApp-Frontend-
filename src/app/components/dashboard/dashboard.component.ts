@@ -55,9 +55,20 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {}
 
   setTab(tab: Tab): void {
-    this.activeTab = tab;
+    if (this.activeTab !== tab) {
+      this.activeTab = tab;
+      this.resetForm();
+    }
+  }
+
+  resetForm(): void {
     this.result = null;
     this.errorMsg = '';
+    this.first = { value: 0, unitName: 'FEET', measurementType: 'LENGTH' };
+    this.second = { value: 0, unitName: 'INCHES', measurementType: 'LENGTH' };
+    this.target = { value: 0, unitName: 'YARDS', measurementType: 'LENGTH' };
+    this.convertTargetUnit = 'INCHES';
+    this.convertTargetType = 'LENGTH';
   }
 
   onFirstChange(q: QuantityDTO) { this.first = q; }

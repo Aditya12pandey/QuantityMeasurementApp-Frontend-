@@ -29,8 +29,8 @@ a<app-navbar></app-navbar>
       <ng-container *ngIf="activeTab === 'compare'">
         <p class="op-description">Check whether two quantities are equal after normalising units.</p>
         <div class="inputs-grid">
-          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
-          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="First Quantity"  [initialData]="first"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" [initialData]="second" (quantityChange)="onSecondChange($event)"></app-quantity-input>
         </div>
       </ng-container>
 
@@ -38,7 +38,7 @@ a<app-navbar></app-navbar>
       <ng-container *ngIf="activeTab === 'convert'">
         <p class="op-description">Convert a quantity from one unit to another.</p>
         <div class="inputs-grid single">
-          <app-quantity-input label="Source Quantity" (quantityChange)="onConvertFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Source Quantity" [initialData]="first" (quantityChange)="onConvertFirstChange($event)"></app-quantity-input>
         </div>
         <div class="target-unit-row form-group">
           <label>Target Type</label>
@@ -56,9 +56,9 @@ a<app-navbar></app-navbar>
       <ng-container *ngIf="activeTab === 'add'">
         <p class="op-description">Add two quantities and express the result in a target unit.</p>
         <div class="inputs-grid triple">
-          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
-          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
-          <app-quantity-input label="Target Unit"     (quantityChange)="onTargetChange($event)"></app-quantity-input>
+          <app-quantity-input label="First Quantity"  [initialData]="first"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" [initialData]="second" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="Target Unit"     [initialData]="target" (quantityChange)="onTargetChange($event)"></app-quantity-input>
         </div>
       </ng-container>
 
@@ -66,9 +66,9 @@ a<app-navbar></app-navbar>
       <ng-container *ngIf="activeTab === 'subtract'">
         <p class="op-description">Subtract the second quantity from the first and express the result in a target unit.</p>
         <div class="inputs-grid triple">
-          <app-quantity-input label="First Quantity"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
-          <app-quantity-input label="Second Quantity" (quantityChange)="onSecondChange($event)"></app-quantity-input>
-          <app-quantity-input label="Target Unit"     (quantityChange)="onTargetChange($event)"></app-quantity-input>
+          <app-quantity-input label="First Quantity"  [initialData]="first"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Second Quantity" [initialData]="second" (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="Target Unit"     [initialData]="target" (quantityChange)="onTargetChange($event)"></app-quantity-input>
         </div>
       </ng-container>
 
@@ -76,8 +76,8 @@ a<app-navbar></app-navbar>
       <ng-container *ngIf="activeTab === 'divide'">
         <p class="op-description">Divide the first quantity by the second (scalar result).</p>
         <div class="inputs-grid">
-          <app-quantity-input label="Dividend" (quantityChange)="onFirstChange($event)"></app-quantity-input>
-          <app-quantity-input label="Divisor"  (quantityChange)="onSecondChange($event)"></app-quantity-input>
+          <app-quantity-input label="Dividend" [initialData]="first"  (quantityChange)="onFirstChange($event)"></app-quantity-input>
+          <app-quantity-input label="Divisor"  [initialData]="second" (quantityChange)="onSecondChange($event)"></app-quantity-input>
         </div>
       </ng-container>
 
