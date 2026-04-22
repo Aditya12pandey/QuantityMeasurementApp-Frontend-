@@ -1,0 +1,51 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">⚖️</div>
+      <h1>Quantity Measurement</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="auth-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          [(ngModel)]="username"
+          name="username"
+          placeholder="Enter username"
+          required
+          autocomplete="username"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Enter password"
+          required
+          autocomplete="current-password"
+          class="form-input"
+        />
+      </div>
+
+      <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>

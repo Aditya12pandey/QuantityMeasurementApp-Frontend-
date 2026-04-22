@@ -1,0 +1,31 @@
+<div class="qty-input-card">
+  <h4 class="qty-label">{{ label }}</h4>
+
+  <div class="qty-row">
+    <div class="form-group">
+      <label>Value</label>
+      <input
+        type="number"
+        [(ngModel)]="value"
+        (ngModelChange)="emit()"
+        class="form-input"
+        placeholder="0"
+        step="any"
+      />
+    </div>
+
+    <div class="form-group" *ngIf="!forcedType">
+      <label>Type</label>
+      <select [(ngModel)]="selectedType" (ngModelChange)="onTypeChange()" class="form-input">
+        <option *ngFor="let t of measurementTypes" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Unit</label>
+      <select [(ngModel)]="selectedUnit" (ngModelChange)="emit()" class="form-input">
+        <option *ngFor="let u of units" [value]="u">{{ u }}</option>
+      </select>
+    </div>
+  </div>
+</div>

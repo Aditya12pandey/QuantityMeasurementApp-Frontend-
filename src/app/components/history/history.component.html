@@ -1,0 +1,87 @@
+<app-navbar></app-navbar>
+
+<div class="history-page">
+  <div class="history-container">
+
+    <div class="page-header">
+      <div>
+        <h2>Measurement History</h2>
+        <p>Total records: <strong>{{ totalCount }}</strong></p>
+      </div>
+      <button class="btn btn-outline btn-sm" (click)="resetFilter()">🔄 Reset</button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-mode-group">
+        <button class="filter-chip" [class.active]="filterMode==='all'" (click)="filterMode='all'; applyFilter()">All</button>
+        <button class="filter-chip" [class.active]="filterMode==='operation'" (click)="filterMode='operation'">By Operation</button>
+        <button class="filter-chip" [class.active]="filterMode==='measurement'" (click)="filterMode='measurement'">By Type</button>
+      </div>
+
+      <div class="filter-selects" *ngIf="filterMode !== 'all'">
+        <ng-container *ngIf="filterMode === 'operation'">
+          <select [(ngModel)]="operationFilter" class="form-input filter-select">
+            <option value="">Select operation...</option>
+            <option *ngFor="let op of operationTypes" [value]="op">{{ op }}</option>
+          </select>
+        </ng-container>
+
+        <ng-container *ngIf="filterMode === 'measurement'">
+          <select [(ngModel)]="measurementFilter" class="form-input filter-select">
+            <option value="">Select type...</option>
+            <option *ngFor="let mt of measurementTypes" [value]="mt">{{ mt }}</option>
+          </select>
+        </ng-container>
+
+        <button class="btn btn-primary btn-sm" (click)="applyFilter()">Apply</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner large"></div>
+      <p>Loading records…</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+
+    <!-- Empty -->
+    <div *ngIf="!loading && records.length === 0 && !errorMsg" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>No records found.</p>
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="!loading && records.length > 0" class="table-wrapper">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Operation</th>
+            <th>Type</th>
+            <th>Inputs</th>
+            <th>Result</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of records; let i = index">
+            <td class="td-id">{{ r.id }}</td>
+            <td>
+              <span class="badge" [ngClass]="operationBadgeClass(r.operationType)">
+                {{ r.operationType }}
+              </span>
+            </td>
+            <td class="td-type">{{ r.measurementType }}</td>
+            <td class="td-inputs">{{ r.inputValues }}</td>
+            <td class="td-result"><strong>{{ r.resultValue }}</strong></td>
+            <td class="td-date">{{ r.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
